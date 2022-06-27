@@ -23,6 +23,29 @@ def bels(ID = None, continent = None, country = None, countrycode = None, statep
     #print(data)
     return data
 
+def bels_occur(occurrence=None):
+    #print(kwargs)
+
+    url = 'https://localityservice.uc.r.appspot.com/api/bestgeoref'
+
+    location = dict(
+        ID=occurrence.get('id'),
+        continent=occurrence.get('continent'),
+        country=occurrence.get('country'),
+        countrycode=occurrence.get('countrycode'),
+        stateprovince=occurrence.get('stateprovince'),
+        county=occurrence.get('county'),
+        locality=occurrence.get('locality')
+    )
+
+    bels_request = dict(give_me='BEST_GEOREF', for_location=location)
+
+    r = requests.post(url=url, json=bels_request)
+    data = r.json()
+    #print(data)
+    return data
+
+
 """
 # Test data
 ID = "1"
@@ -45,7 +68,7 @@ data = bels(
 print(data)
 """
 
-with open('bels_sample_input.csv', newline='') as csvfile:
+with open('bels_sample_input.csv', newline='', encoding="utf-8-sig") as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
         continent = row.get('continent')
@@ -55,6 +78,9 @@ with open('bels_sample_input.csv', newline='') as csvfile:
         county = row.get('county')
         locality = row.get('locality')
         print(continent, country, countrycode, stateprovince, county, locality)
-        data = bels(continent=continent, country=country, countrycode=countrycode, stateprovince=stateprovince, county=county, locality=locality)
+        print(row)
+        #data = bels(row)
+        data = bels_occur(occurrence=row)
+        #data = bels(continent=continent, country=country, countrycode=countrycode, stateprovince=stateprovince, county=county, locality=locality)
         print(data)
 
