@@ -77,10 +77,36 @@ with open('bels_sample_input.csv', newline='', encoding="utf-8-sig") as csvfile:
         stateprovince = row.get('stateprovince')
         county = row.get('county')
         locality = row.get('locality')
-        print(continent, country, countrycode, stateprovince, county, locality)
-        print(row)
+        #print(continent, country, countrycode, stateprovince, county, locality)
+        #print(row)
         #data = bels(row)
         data = bels_occur(occurrence=row)
         #data = bels(continent=continent, country=country, countrycode=countrycode, stateprovince=stateprovince, county=county, locality=locality)
         print(data)
+        field_names = [
+            'status',
+            'elapsed_time',
+            'id',
+            'continent',
+            'country',
+            'countrycode',
+            'stateprovince',
+            'county',
+            'locality',
+            'bels_countrycode',
+            'bels_match_string',
+            'bels_decimallatitude',
+            'bels_decimallongitude',
+            'bels_geodeticdatum',
+            'bels_coordinateuncertaintyinmeters',
+            'bels_georeferencedby',
+            'bels_georeferenceddate',
+            'bels_georeferenceprotocol',
+            'bels_georeferencesources',
+            'bels_georeferenceremarks',
+            'bels_georeference_score',
+            'bels_georeference_source',
+            'bels_best_of_n_georeferences',
+            'bels_match_type'
+            ]
 
