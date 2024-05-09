@@ -121,7 +121,7 @@ def main():
         #bels_sample_input.csv
         #occurrences_02
         print('Reading occurrences')
-        with open('occurrences.csv', newline='', encoding="utf-8-sig") as inputfile:
+        with open('TORCH-Denton_nogeo.csv', newline='', encoding="utf-8-sig") as inputfile:
             reader = csv.DictReader(inputfile)
             for row in reader:
                 print('Searching for dups for id:', row['id'])

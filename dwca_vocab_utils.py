@@ -26,6 +26,8 @@ import os.path
 import logging
 import copy
 import csv
+# addeding to test speed improvements
+from functools import cache
 
 from dwca_utils import csv_file_dialect
 from dwca_utils import csv_file_encoding
@@ -724,6 +726,8 @@ def darwinize_dict(inputdict, dwccloudfile, namespace=False):
     j = 1
     for term,value in inputdict.items():
         searchterm = ustripstr(term)
+        newterm = matchterm(searchterm, value, darwinclouddict)
+        """
         if searchterm in darwinclouddict:
             if darwinclouddict[searchterm]['standard'] is not None and \
                 len(darwinclouddict[searchterm]['standard'].strip()) > 0:
@@ -739,10 +743,33 @@ def darwinize_dict(inputdict, dwccloudfile, namespace=False):
             if len(newterm) == 0:
                 newterm = 'UNNAMED_COLUMN_%s' % j
                 j += 1
+        """
         darwinizeddict[newterm]=value
         i += 1
 
     return darwinizeddict
+
+@cache
+def matchterm(searchterm=None, value=None, darwinclouddict=None, namespace=False):
+    if searchterm in darwinclouddict:
+        if darwinclouddict[searchterm]['standard'] is not None and \
+            len(darwinclouddict[searchterm]['standard'].strip()) > 0:
+            if namespace == True:
+                ns = darwinclouddict[searchterm]['namespace']
+                newterm = ns + ':' + darwinclouddict[searchterm]['standard']
+            else:
+                newterm = darwinclouddict[searchterm]['standard']
+        else:
+            newterm = searchterm.strip()
+    else:
+        newterm = searchterm.strip()
+        if len(newterm) == 0:
+            #newterm = 'UNNAMED_COLUMN_%s' % j
+            newterm = 'UNNAMED_COLUMN_X'
+            #j += 1
+    return newterm
+    #darwinizeddict[newterm]=value
+    #i += 1
 
 def not_in_list(targetlist, checklist, function=None, *args, **kwargs):
     ''' Get the list of distinct values in a checklist that are not in a target list.
