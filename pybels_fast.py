@@ -51,10 +51,6 @@ def bels_simplify(occurrence):
     matchstr = super_simplify(sanscoordslocmatchstr)
     return matchstr
 
-# try zip file
-
-# importing required modules 
-
 
 # specifying the zip file name 
 #zip_file = '/Volumes/herbarium-data_v3/TORCH-data_snapshots-2024-05-07/ACU-485_DwC-A.zip' 
@@ -64,13 +60,9 @@ zip_dir = 'data/TORCH-data_snapshots-2024-05-07/'
 
 
 # opening the zip file in READ mode 
-
-
-#zip_files = glob.glob('*.zip')
 zip_files = glob.glob(zip_dir + '*.zip')
 print(zip_files)
 
-#df_list = []
 df_dict = {}
 for zip_file in zip_files:
     var_name = Path(zip_file).stem.replace('-','_')
@@ -91,23 +83,15 @@ for zip_file in zip_files:
     #TODO raise exception or alert if no matching occ file found
 
 
-#print(df_dict)
+
 print('Load of DWCAs complete.')
-#print(len(df_dict))
 torch_list=[]
 
 for coll in df_dict:
     df = df_dict[coll]
-
-    #print(df.shape)
     print('Coll. shape', coll, df.shape)
-    
-
     df_torch = df[(df['stateProvince'] == 'Texas') | (df['stateProvince'] == 'Oklahoma')]
-    #df_tx = df[df['stateProvince'] == 'Texas'] 
-    #df_ok = df[df['stateProvince'] == 'Oklahoma']
     print('Filtered TX OK', coll, df_torch.shape)
-    #print(df_dict[coll]['stateProvince'])
     # by iterating
     """
     for index, row in df_torch.iterrows():
@@ -120,37 +104,16 @@ for coll in df_dict:
         #df_dict[coll][index]['bels_location_string'] = bels_location_string
     """
     # apply solution
-    #df_dict[coll]['bels_location_string'] = df_dict[coll].apply(bels_simplify)
     # Generate loc strings
     print('Generating BELS location strings for:', coll)
     df_torch['bels_location_string'] = df_torch.apply(bels_simplify, axis=1)
-    #print(df_torch.apply(bels_simplify))
     # Save to CSV
     df_torch.to_csv(coll + '.csv', sep='\t')
     torch_list.append(df_torch)
 
 
 print('Concatenating DWCAs')
-#df_list = []
-"""
-for key in df_dict:
-    print(df_dict[key].shape)
-    df_list.append(df_dict[key])
-df_all = pd.concat(df_list)
-print('Concatenating complete, writing to CSV')
-"""
 df_all = pd.concat(torch_list)
 
 df_all.to_csv('torch_bels_locs.csv', index=False, sep='\t')
 print('Concatenated DWCAs saved to CSV')
-"""
-
-with open('bels_sample_input.csv', newline='', encoding="utf-8-sig") as inputfile:
-    reader = csv.DictReader(inputfile)
-    for row in reader:
-        print('Searching for dups for id:', row['id'])
-        response = bels_simplify(occurrence=row)
-        print(response)
-"""
-
-
