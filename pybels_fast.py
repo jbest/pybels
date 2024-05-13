@@ -110,19 +110,19 @@ for coll in df_dict:
     #print(df_dict[coll]['stateProvince'])
     # by iterating
 
-    for index, row in df_dict[coll].iterrows():
+    for index, row in df_torch.iterrows():
         #print(row['stateProvince'])
         bels_location_string = bels_simplify(occurrence=row)
         if bels_location_string:
             #print(bels_location_string)
-            df_dict[coll].loc[index,'bels_location_string'] = bels_location_string
+            df_torch.loc[index,'bels_location_string'] = bels_location_string
         #df_dict[coll][index]['bels_location_string'] = bels_location_string
         #df_dict[coll][index]['bels_location_string'] = bels_location_string
 
     # vectorized apply
     #df_dict[coll]['bels_location_string'] = df_dict[coll].apply(bels_simplify)
     # Save to CSV
-    df_dict[coll].to_csv(coll + '.csv', sep='\t')
+    df_torch.to_csv(coll + '.csv', sep='\t')
 
 
 print('Concatenating DWCAs')
