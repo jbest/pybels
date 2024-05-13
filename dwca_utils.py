@@ -101,6 +101,8 @@ def lstripstr(s):
     '''
     if s is None:
         return ''
+    s = str(s)
+    #print(s)
     return s.strip().lower()
 
 def setup_actor_logging(options):

@@ -21,7 +21,7 @@ from dwca_vocab_utils import darwinize_dict
 from chardet import UniversalDetector
 from dwca_utils import safe_read_csv_row, lower_dict_keys
 
-def bels_simplify(occurrence=None):
+def bels_simplify(occurrence):
 
     location = dict(
         ID=occurrence.get('id'),
@@ -32,6 +32,7 @@ def bels_simplify(occurrence=None):
         county=occurrence.get('county'),
         locality=occurrence.get('locality')
     )
+    #print(occurrence)
 
     dirname = os.path.dirname(__file__)
     vocabpath = os.path.join(dirname, './vocabularies/')
@@ -57,7 +58,10 @@ def bels_simplify(occurrence=None):
 
 # specifying the zip file name 
 #zip_file = '/Volumes/herbarium-data_v3/TORCH-data_snapshots-2024-05-07/ACU-485_DwC-A.zip' 
-zip_dir = '/Volumes/herbarium-data_v3/TORCH-data_snapshots-2024-05-07/' 
+#zip_dir = '/Volumes/herbarium-data_v3/TORCH-data_snapshots-2024-05-07/' 
+#zip_dir = 'data/TORCH-data_snapshots-2024-05-07/'
+zip_dir = 'data/test/'
+
 
 # opening the zip file in READ mode 
 
@@ -91,6 +95,27 @@ for zip_file in zip_files:
 #print(df_dict)
 print('Load of DWCAs complete.')
 print(len(df_dict))
+for coll in df_dict:
+    print(df_dict[coll].shape)
+    #print(df_dict[coll]['stateProvince'])
+    # by iterating
+
+    for index, row in df_dict[coll].iterrows():
+        #print(row['stateProvince'])
+        bels_location_string = bels_simplify(occurrence=row)
+        if bels_location_string:
+            #print(bels_location_string)
+            df_dict[coll].loc[index,'bels_location_string'] = bels_location_string
+        #df_dict[coll][index]['bels_location_string'] = bels_location_string
+        #df_dict[coll][index]['bels_location_string'] = bels_location_string
+
+    # vectorized apply
+    #df_dict[coll]['bels_location_string'] = df_dict[coll].apply(bels_simplify)
+    # Save to CSV
+    df_dict[coll].to_csv(coll + '.csv', sep='\t')
+
+
+
 
 """
 
