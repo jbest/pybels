@@ -94,7 +94,7 @@ for zip_file in zip_files:
 #print(df_dict)
 print('Load of DWCAs complete.')
 print(len(df_dict))
-
+torch_list=[]
 
 for coll in df_dict:
     df = df_dict[coll]
@@ -123,15 +123,21 @@ for coll in df_dict:
     #df_dict[coll]['bels_location_string'] = df_dict[coll].apply(bels_simplify)
     # Save to CSV
     df_torch.to_csv(coll + '.csv', sep='\t')
+    torch_list.append(df_torch)
 
 
 print('Concatenating DWCAs')
-df_list = []
+#df_list = []
+"""
 for key in df_dict:
     print(df_dict[key].shape)
     df_list.append(df_dict[key])
 df_all = pd.concat(df_list)
-print('Concatenating complete')
+print('Concatenating complete, writing to CSV')
+"""
+df_all = pd.concat(torch_list)
+
+df_all.to_csv('torch_bels_locs.csv', index=False, sep='\t')
 
 """
 
