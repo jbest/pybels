@@ -90,13 +90,23 @@ for zip_file in zip_files:
         print(df_dict[var_name].shape)
     #TODO raise exception or alert if no matching occ file found
 
-        
 
 #print(df_dict)
 print('Load of DWCAs complete.')
 print(len(df_dict))
+
+
 for coll in df_dict:
-    print(df_dict[coll].shape)
+    df = df_dict[coll]
+
+    print(df.shape)
+    print('Filtering TX OK')
+    
+
+    df_torch = df[(df['stateProvince'] == 'Texas') | (df['stateProvince'] == 'Oklahoma')]
+    #df_tx = df[df['stateProvince'] == 'Texas'] 
+    #df_ok = df[df['stateProvince'] == 'Oklahoma']
+    print('Filtered TX OK' , df_torch.shape)
     #print(df_dict[coll]['stateProvince'])
     # by iterating
 
@@ -115,7 +125,13 @@ for coll in df_dict:
     df_dict[coll].to_csv(coll + '.csv', sep='\t')
 
 
-
+print('Concatenating DWCAs')
+df_list = []
+for key in df_dict:
+    print(df_dict[key].shape)
+    df_list.append(df_dict[key])
+df_all = pd.concat(df_list)
+print('Concatenating complete')
 
 """
 
