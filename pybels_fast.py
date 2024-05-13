@@ -66,7 +66,7 @@ zip_dir = '/Volumes/herbarium-data_v3/TORCH-data_snapshots-2024-05-07/'
 zip_files = glob.glob(zip_dir + '*.zip')
 print(zip_files)
 
-df_list = []
+#df_list = []
 df_dict = {}
 for zip_file in zip_files:
     var_name = Path(zip_file).stem.replace('-','_')
@@ -76,20 +76,21 @@ for zip_file in zip_files:
     print('Reading:', zip_file, 'into', var_name )
     if 'occurrences.csv' in dwca.namelist():
         df_dict[var_name] = pd.read_csv(dwca.open('occurrences.csv'), low_memory=False)
+        print(df_dict[var_name].shape)
     elif 'occurrence.txt' in dwca.namelist():
         # special case for UT PRC which is from IPT
         df_dict[var_name] = pd.read_csv(dwca.open('occurrence.txt'), sep='\t', low_memory=False, on_bad_lines='skip')
+        print(df_dict[var_name].shape)
     elif 'occurrences.tab' in dwca.namelist():
         df_dict[var_name] = pd.read_csv(dwca.open('occurrences.tab'), sep='\t', low_memory=False, on_bad_lines='skip')
-        #print(df_dict[var_name].shape)
-        #dwca-prc-torch-v1.130.zip
-        #dwca_ut = zipfile.ZipFile('dwca-prc-torch-v1.130.zip', 'r')
-        #df_ut = pd.read_csv(dwca_ut.open('occurrence.txt'), sep='\t', low_memory=False, on_bad_lines='skip')
-    if df_dict[var_name]:
         print(df_dict[var_name].shape)
+    #TODO raise exception or alert if no matching occ file found
+
+        
 
 #print(df_dict)
 print('Load of DWCAs complete.')
+print(len(df_dict))
 
 """
 
