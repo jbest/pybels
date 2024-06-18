@@ -1,0 +1,4 @@
+Pybels notes
+
+Pybels is my attempt to make it easier to run BELS locally and faster by making a lot of assumptions that were otherwise slow to process.
+
