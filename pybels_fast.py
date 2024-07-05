@@ -87,6 +87,7 @@ for zip_file in zip_files:
             print(df_dict[var_name].shape)
     except zipfile.BadZipFile as e:
         print('Unable to read bad zipfile:', zip_file)
+        #TODO indicate problem in output
     #TODO raise exception or alert if no matching occ file found
 
 
