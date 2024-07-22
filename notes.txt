@@ -2,3 +2,15 @@ Pybels notes
 
 Pybels is my attempt to make it easier to run BELS locally and faster by making a lot of assumptions that were otherwise slow to process.
 
+
+Preparation
+Download DwCA zip files using TORCH_TCN_urls project
+Put all ZIP files into one directory
+Configure pybels_fast.py to read that directory - zip_dir =???
+
+
+use pybels_fast.py to read DwCA zips and generate a BELS location file
+
+
+Use Jupyter Notebook analyze_loc_matches_local.ipynb to analyze
+
