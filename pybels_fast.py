@@ -58,13 +58,17 @@ def bels_simplify(occurrence):
 #zip_dir = 'data/TORCH-data_snapshots-2024-05-07/'
 #zip_dir = 'data/test/'
 
-zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_TCN_urls/data/TORCH-data_snapshots-2024-06-01/'
+#zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_TCN_urls/data/TORCH-data_snapshots-2024-06-01/'
+zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_TCN_urls/data/TORCH-data_snapshots-2024-08-19/'
 #zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_TCN_urls/data/TORCH-test_badzip/'
 
 
 # opening the zip file in READ mode 
 zip_files = glob.glob(zip_dir + '*.zip')
 print(zip_files)
+
+def pre_filter(df = None):
+    return df[(df['stateProvince'] == 'Texas') | (df['stateProvince'] == 'Oklahoma')]
 
 df_dict = {}
 for zip_file in zip_files:
@@ -76,15 +80,26 @@ for zip_file in zip_files:
         #dwca.printdir()
         print('Reading:', zip_file, 'into', var_name )
         if 'occurrences.csv' in dwca.namelist():
-            df_dict[var_name] = pd.read_csv(dwca.open('occurrences.csv'), low_memory=False)
-            print(df_dict[var_name].shape)
+            df = pd.read_csv(dwca.open('occurrences.csv'), low_memory=False)
+            # filter records not needed - otherwise memory issues
+            print('Before filter:', var_name, df.shape)
+            df_dict[var_name] = pre_filter(df)
+            print('After filter:', var_name, df_dict[var_name].shape)
+            #print(df_dict[var_name].shape)
         elif 'occurrence.txt' in dwca.namelist():
             # special case for UT PRC which is from IPT
-            df_dict[var_name] = pd.read_csv(dwca.open('occurrence.txt'), sep='\t', low_memory=False, on_bad_lines='skip')
+            df = pd.read_csv(dwca.open('occurrence.txt'), sep='\t', low_memory=False, on_bad_lines='skip')
+            # filter records not needed - otherwise memory issues
+            print('Before filter:', var_name, df.shape)
+            df_dict[var_name] = pre_filter(df)
+            print('After filter:', var_name, df_dict[var_name].shape)            
             print(df_dict[var_name].shape)
         elif 'occurrences.tab' in dwca.namelist():
-            df_dict[var_name] = pd.read_csv(dwca.open('occurrences.tab'), sep='\t', low_memory=False, on_bad_lines='skip')
-            print(df_dict[var_name].shape)
+            df = pd.read_csv(dwca.open('occurrences.tab'), sep='\t', low_memory=False, on_bad_lines='skip')
+            # filter records not needed - otherwise memory issues
+            print('Before filter:', var_name, df.shape)
+            df_dict[var_name] = pre_filter(df)
+            print('After filter:', var_name, df_dict[var_name].shape)
     except zipfile.BadZipFile as e:
         print('Unable to read bad zipfile:', zip_file)
         #TODO indicate problem in output
