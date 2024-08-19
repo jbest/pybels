@@ -115,6 +115,8 @@ for coll in df_dict:
     # Generate loc strings
     print('Generating BELS location strings for:', coll)
     df_torch['bels_location_string'] = df_torch.apply(bels_simplify, axis=1)
+    #TODO - add a hash string based on bels_location_string. Instead of using the dwc_hash, use a similar method but rewrite with a cached property
+    # this will provide a hash that will match across any version of the dataset as opposed to the loc_id I'm currently using
     # Save to CSV
     df_torch.to_csv(coll + '.csv', sep='\t')
     torch_list.append(df_torch)
