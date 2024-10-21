@@ -59,8 +59,10 @@ def bels_simplify(occurrence):
 #zip_dir = 'data/test/'
 
 #zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_TCN_urls/data/TORCH-data_snapshots-2024-06-01/'
-zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_TCN_urls/data/TORCH-data_snapshots-2024-08-19/'
+#zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_TCN_urls/data/TORCH-data_snapshots-2024-08-19/'
 #zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_TCN_urls/data/TORCH-test_badzip/'
+# Test for BRIT UT georef
+zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_TCN_urls/data/TORCH-data_snapshots_BRIT_UT-TEST-2024-10-21/'
 
 
 # opening the zip file in READ mode 
@@ -140,5 +142,7 @@ for coll in df_dict:
 print('Concatenating DWCAs')
 df_all = pd.concat(torch_list)
 
-df_all.to_csv('torch_bels_locs.csv', index=False, sep='\t')
+#df_all.to_csv('torch_bels_locs.csv', index=False, sep='\t')
+df_all.to_csv('torch_bels_BRIT_UT_locs.csv', index=False, sep='\t')
+
 print('Concatenated DWCAs saved to CSV')
