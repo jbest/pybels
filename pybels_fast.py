@@ -4,7 +4,6 @@ Consolidating functions into one file
 
 """
 
-
 import csv
 import os
 import zipfile
@@ -62,7 +61,7 @@ def bels_simplify(occurrence):
 #zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_TCN_urls/data/TORCH-data_snapshots-2024-08-19/'
 #zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_TCN_urls/data/TORCH-test_badzip/'
 # Test for BRIT UT georef
-zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_TCN_urls/data/TORCH-data_snapshots_BRIT_UT-TEST-2024-10-21/'
+zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_georef_regions/TORCH-data_snapshots-2024-11-05/'
 
 
 # opening the zip file in READ mode 
@@ -134,8 +133,8 @@ for coll in df_dict:
     df_torch['bels_location_string'] = df_torch.apply(bels_simplify, axis=1)
     #TODO - add a hash string based on bels_location_string. Instead of using the dwc_hash, use a similar method but rewrite with a cached property
     # this will provide a hash that will match across any version of the dataset as opposed to the loc_id I'm currently using
-    # Save to CSV
-    df_torch.to_csv(coll + '.csv', sep='\t')
+    # Save to TSV
+    df_torch.to_csv(coll + '.tsv', sep='\t')
     torch_list.append(df_torch)
 
 
@@ -143,6 +142,6 @@ print('Concatenating DWCAs')
 df_all = pd.concat(torch_list)
 
 #df_all.to_csv('torch_bels_locs.csv', index=False, sep='\t')
-df_all.to_csv('torch_bels_BRIT_UT_locs.csv', index=False, sep='\t')
+df_all.to_csv('torch_bels_locs.tsv', index=False, sep='\t')
 
-print('Concatenated DWCAs saved to CSV')
+print('Concatenated DWCAs saved to TSV')
