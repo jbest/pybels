@@ -61,7 +61,9 @@ def bels_simplify(occurrence):
 #zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_TCN_urls/data/TORCH-data_snapshots-2024-08-19/'
 #zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_TCN_urls/data/TORCH-test_badzip/'
 # Test for BRIT UT georef
-zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_georef_regions/TORCH-data_snapshots-2024-11-05/'
+#zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_georef_regions/TORCH-data_snapshots-2024-11-05/'
+zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_TCN_urls/TORCH-data_snapshots_TX_OK_2024-11-13/'
+
 
 
 # opening the zip file in READ mode 
