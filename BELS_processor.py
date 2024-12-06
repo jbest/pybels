@@ -34,11 +34,13 @@ def summarize_locations_by_region(df):
     def get_stats(group):
         total_groups = group['bels_location_id'].nunique()
         groups_with_coords = group.groupby('bels_location_id')['coordinate_count'].first()
+        total_records = len(group)
         
         return pd.Series({
             'total_location_groups': total_groups,
             'groups_with_coordinates': (groups_with_coords > 0).sum(),
-            'groups_without_coordinates': (groups_with_coords == 0).sum()
+            'groups_without_coordinates': (groups_with_coords == 0).sum(),
+            'total_records': total_records
         })
     
     return df.groupby(['stateProvince', 'county']).apply(get_stats, include_groups=False).reset_index()
