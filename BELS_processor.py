@@ -1,16 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
-# Generated using Claude.ai
-#https://claude.ai/chat/18fa6039-d306-449d-958b-08ad823fe977
-
-
-# In[12]:
-
-
 import pandas as pd
 
 def analyze_locations(df):
@@ -40,32 +27,6 @@ def analyze_locations(df):
     # Merge stats back to original dataframe
     return df.merge(location_stats, on='bels_location_string')
 
-
-# In[22]:
-
-
-def summarize_locations_by_region_v1(df):
-    """
-    Generates location group statistics for each state/county combination.
-    /tmp/ipykernel_516747/3985458850.py:15: DeprecationWarning: DataFrameGroupBy.apply operated on the grouping columns. This behavior is deprecated, and in a future version of pandas the grouping columns will be excluded from the operation. Either pass `include_groups=False` to exclude the groupings or explicitly select the grouping columns after groupby to silence this warning.
-  return df.groupby(['stateProvince', 'county']).apply(get_stats).reset_index()
-    """
-    def get_stats(group):
-        total_groups = group['bels_location_id'].nunique()
-        groups_with_coords = group.groupby('bels_location_id')['coordinate_count'].first()
-        
-        return pd.Series({
-            'total_location_groups': total_groups,
-            'groups_with_coordinates': (groups_with_coords > 0).sum(),
-            'groups_without_coordinates': (groups_with_coords == 0).sum()
-        })
-    
-    return df.groupby(['stateProvince', 'county']).apply(get_stats).reset_index()
-
-
-# In[30]:
-
-
 def summarize_locations_by_region(df):
     """
     Generates location group statistics for each state/county combination.
@@ -82,49 +43,18 @@ def summarize_locations_by_region(df):
     
     return df.groupby(['stateProvince', 'county']).apply(get_stats, include_groups=False).reset_index()
 
-
-# In[17]:
-
-
-# Example usage
 if __name__ == "__main__":
     # Input DataFrame
     df_occ = pd.read_csv('torch_bels_locs_SAMPLE.tsv', low_memory=False, sep='\t')
     
     # Process the DataFrame
-    #result = add_coordinate_counts(data)
-    result = analyze_locations(df_occ)
+    df_occ_bels_metrics = analyze_locations(df_occ)
     
     # Display all columns
-    pd.set_option('display.max_columns', None)
-    print("\nProcessed DataFrame with coordinate counts:")
-    print(result)
+    #pd.set_option('display.max_columns', None)
+    #print("\nProcessed DataFrame with coordinate counts:")
+    #print(result)
+    df_occ_bels_metrics.to_csv('torch_bels_metrics.tsv', sep='\t')
 
-
-# In[18]:
-
-
-result
-#df_sorted = result.sort_values(by=['coordinate_count'], ascending=False)
-#df_sorted
-
-# After running analyze_locations
-print(result.columns)  # This will show all column names
-#print(columns[['bels_location_string', 'bels_location_id', 'bels_group_rec_count']].head())  # Show sample dataresult
-# In[31]:
-
-
-df_summary = summarize_locations_by_region(result)
-
-
-# In[32]:
-
-
-df_summary
-
-
-# In[ ]:
-
-
-
-
+    df_summary = summarize_locations_by_region(df_occ_bels_metrics)
+    df_summary.to_csv('torch_bels_summary.tsv', sep='\t')
