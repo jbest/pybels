@@ -20,6 +20,24 @@ from dwca_vocab_utils import darwinize_dict
 from chardet import UniversalDetector
 from dwca_utils import safe_read_csv_row, lower_dict_keys
 
+# specifying the zip file name 
+#zip_file = '/Volumes/herbarium-data_v3/TORCH-data_snapshots-2024-05-07/ACU-485_DwC-A.zip' 
+#zip_dir = '/Volumes/herbarium-data_v3/TORCH-data_snapshots-2024-05-07/' 
+#zip_dir = 'data/TORCH-data_snapshots-2024-05-07/'
+#zip_dir = 'data/test/'
+
+#zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_TCN_urls/data/TORCH-data_snapshots-2024-06-01/'
+#zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_TCN_urls/data/TORCH-data_snapshots-2024-08-19/'
+#zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_TCN_urls/data/TORCH-test_badzip/'
+# Test for BRIT UT georef
+#zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_georef_regions/TORCH-data_snapshots-2024-11-05/'
+zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_georeferencing/data/TORCH-data_snapshots_TX_OK_2024-12-06/'
+
+# path to save TSV file
+output_path = Path(zip_dir) / 'torch_bels_locs.tsv'
+print('output_path', output_path)
+
+
 def bels_simplify(occurrence):
 
     location = dict(
@@ -50,27 +68,12 @@ def bels_simplify(occurrence):
     matchstr = super_simplify(sanscoordslocmatchstr)
     return matchstr
 
-
-# specifying the zip file name 
-#zip_file = '/Volumes/herbarium-data_v3/TORCH-data_snapshots-2024-05-07/ACU-485_DwC-A.zip' 
-#zip_dir = '/Volumes/herbarium-data_v3/TORCH-data_snapshots-2024-05-07/' 
-#zip_dir = 'data/TORCH-data_snapshots-2024-05-07/'
-#zip_dir = 'data/test/'
-
-#zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_TCN_urls/data/TORCH-data_snapshots-2024-06-01/'
-#zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_TCN_urls/data/TORCH-data_snapshots-2024-08-19/'
-#zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_TCN_urls/data/TORCH-test_badzip/'
-# Test for BRIT UT georef
-#zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_georef_regions/TORCH-data_snapshots-2024-11-05/'
-zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_TCN_urls/TORCH-data_snapshots_TX_OK_2024-11-13/'
-
-
-
 # opening the zip file in READ mode 
 zip_files = glob.glob(zip_dir + '*.zip')
-print(zip_files)
+#print(zip_files)
 
 def pre_filter(df = None):
+    print('Filtering for Texas and Oklahoma occurrences only.')
     return df[(df['stateProvince'] == 'Texas') | (df['stateProvince'] == 'Oklahoma')]
 
 df_dict = {}
@@ -136,7 +139,7 @@ for coll in df_dict:
     #TODO - add a hash string based on bels_location_string. Instead of using the dwc_hash, use a similar method but rewrite with a cached property
     # this will provide a hash that will match across any version of the dataset as opposed to the loc_id I'm currently using
     # Save to TSV
-    df_torch.to_csv(coll + '.tsv', sep='\t')
+    #df_torch.to_csv(coll + '.tsv', sep='\t')
     torch_list.append(df_torch)
 
 
@@ -144,6 +147,6 @@ print('Concatenating DWCAs')
 df_all = pd.concat(torch_list)
 
 #df_all.to_csv('torch_bels_locs.csv', index=False, sep='\t')
-df_all.to_csv('torch_bels_locs.tsv', index=False, sep='\t')
+df_all.to_csv(output_path, index=False, sep='\t')
 
-print('Concatenated DWCAs saved to TSV')
+print('Concatenated DwCAs saved to TSV:', output_path)
