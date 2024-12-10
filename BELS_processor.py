@@ -1,4 +1,10 @@
+from pathlib import Path
+
 import pandas as pd
+
+data_path = '/mnt/DATA3-4TB/BRIT_git/TORCH_georeferencing/data/TORCH-data_snapshots_TX_OK_2024-12-06/'
+input_file = 'torch_bels_locs.tsv' # stored in data_path
+
 
 def analyze_locations(df):
     """
@@ -35,28 +41,35 @@ def summarize_locations_by_region(df):
         total_groups = group['bels_location_id'].nunique()
         groups_with_coords = group.groupby('bels_location_id')['coordinate_count'].first()
         total_records = len(group)
+        records_with_coords = group['decimalLatitude'].notna().sum()
         
         return pd.Series({
             'total_location_groups': total_groups,
             'groups_with_coordinates': (groups_with_coords > 0).sum(),
             'groups_without_coordinates': (groups_with_coords == 0).sum(),
-            'total_records': total_records
+            'total_records': total_records,
+            'records_with_coordinates': records_with_coords,
+            'records_without_coordinates': total_records - records_with_coords
         })
     
     return df.groupby(['stateProvince', 'county']).apply(get_stats, include_groups=False).reset_index()
 
 if __name__ == "__main__":
     # Input DataFrame
-    df_occ = pd.read_csv('torch_bels_locs_SAMPLE.tsv', low_memory=False, sep='\t')
+    #df_occ = pd.read_csv('torch_bels_locs_SAMPLE.tsv', low_memory=False, sep='\t')
+    #df_occ = pd.read_csv('data_tsv/torch_bels_locs.tsv', low_memory=False, sep='\t')
+    input_path = Path(data_path) / input_file
+    metrics_path = Path(data_path) / 'torch_bels_metrics.tsv'
+    summary_path = Path(data_path) / 'torch_bels_summary.tsv'
+    print('Loading:', input_path)
+    df_occ = pd.read_csv(input_path, low_memory=False, sep='\t')
     
     # Process the DataFrame
+    print('Generating BELS metrics...')
     df_occ_bels_metrics = analyze_locations(df_occ)
-    
-    # Display all columns
-    #pd.set_option('display.max_columns', None)
-    #print("\nProcessed DataFrame with coordinate counts:")
-    #print(result)
-    df_occ_bels_metrics.to_csv('torch_bels_metrics.tsv', sep='\t')
+    print('Saving BELS metrics:', metrics_path)
+    df_occ_bels_metrics.to_csv(metrics_path, sep='\t', index=False)
 
     df_summary = summarize_locations_by_region(df_occ_bels_metrics)
-    df_summary.to_csv('torch_bels_summary.tsv', sep='\t')
+    print('Saving BELS summary:', summary_path)
+    df_summary.to_csv(summary_path, sep='\t', index=False)
