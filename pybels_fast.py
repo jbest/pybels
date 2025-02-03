@@ -37,6 +37,19 @@ zip_dir = '/mnt/DATA3-4TB/BRIT_git/TORCH_georeferencing/data/TORCH-data_snapshot
 output_path = Path(zip_dir) / 'torch_bels_locs.tsv'
 print('output_path', output_path)
 
+def arg_setup():
+    # set up argument parser
+    ap = argparse.ArgumentParser()
+    input_group = ap.add_mutually_exclusive_group()
+    input_group.add_argument("-s", "--single_input", required=False, \
+        help="Input directory path for a single CSV file.")
+    input_group.add_argument("-z", "--zip_dir", required=False, \
+        help="Input directory path for one or more ZIP files in DwCA format.")
+    ap.add_argument("-v", "--verbose", action="store_true", \
+        help="Detailed output.")
+    args = vars(ap.parse_args())
+    return args
+
 
 def bels_simplify(occurrence):
 
@@ -68,85 +81,86 @@ def bels_simplify(occurrence):
     matchstr = super_simplify(sanscoordslocmatchstr)
     return matchstr
 
-# opening the zip file in READ mode 
-zip_files = glob.glob(zip_dir + '*.zip')
-#print(zip_files)
+if __name__ == '__main__':
+    # opening the zip file in READ mode 
+    zip_files = glob.glob(zip_dir + '*.zip')
+    #print(zip_files)
 
-def pre_filter(df = None):
-    print('Filtering for Texas and Oklahoma occurrences only.')
-    return df[(df['stateProvince'] == 'Texas') | (df['stateProvince'] == 'Oklahoma')]
+    def pre_filter(df = None):
+        print('Filtering for Texas and Oklahoma occurrences only.')
+        return df[(df['stateProvince'] == 'Texas') | (df['stateProvince'] == 'Oklahoma')]
 
-df_dict = {}
-for zip_file in zip_files:
-    var_name = Path(zip_file).stem.replace('-','_')
-    var_name = var_name.replace('.','_')
-    print('Opening:', zip_file)
-    try:
-        dwca = zipfile.ZipFile(zip_file, 'r')
-        #dwca.printdir()
-        print('Reading:', zip_file, 'into', var_name )
-        if 'occurrences.csv' in dwca.namelist():
-            df = pd.read_csv(dwca.open('occurrences.csv'), low_memory=False)
-            # filter records not needed - otherwise memory issues
-            print('Before filter:', var_name, df.shape)
-            df_dict[var_name] = pre_filter(df)
-            print('After filter:', var_name, df_dict[var_name].shape)
-            #print(df_dict[var_name].shape)
-        elif 'occurrence.txt' in dwca.namelist():
-            # special case for UT PRC which is from IPT
-            df = pd.read_csv(dwca.open('occurrence.txt'), sep='\t', low_memory=False, on_bad_lines='skip')
-            # filter records not needed - otherwise memory issues
-            print('Before filter:', var_name, df.shape)
-            df_dict[var_name] = pre_filter(df)
-            print('After filter:', var_name, df_dict[var_name].shape)            
-            print(df_dict[var_name].shape)
-        elif 'occurrences.tab' in dwca.namelist():
-            df = pd.read_csv(dwca.open('occurrences.tab'), sep='\t', low_memory=False, on_bad_lines='skip')
-            # filter records not needed - otherwise memory issues
-            print('Before filter:', var_name, df.shape)
-            df_dict[var_name] = pre_filter(df)
-            print('After filter:', var_name, df_dict[var_name].shape)
-    except zipfile.BadZipFile as e:
-        print('Unable to read bad zipfile:', zip_file)
-        #TODO indicate problem in output
-    #TODO raise exception or alert if no matching occ file found
-
-
-
-print('Load of DWCAs complete.')
-torch_list=[]
-
-for coll in df_dict:
-    df = df_dict[coll]
-    print('Coll. shape', coll, df.shape)
-    df_torch = df[(df['stateProvince'] == 'Texas') | (df['stateProvince'] == 'Oklahoma')]
-    print('Filtered TX OK', coll, df_torch.shape)
-    # by iterating
-    """
-    for index, row in df_torch.iterrows():
-        #print(row['stateProvince'])
-        bels_location_string = bels_simplify(occurrence=row)
-        if bels_location_string:
-            #print(bels_location_string)
-            df_torch.loc[index,'bels_location_string'] = bels_location_string
-        #df_dict[coll][index]['bels_location_string'] = bels_location_string
-        #df_dict[coll][index]['bels_location_string'] = bels_location_string
-    """
-    # apply solution
-    # Generate loc strings
-    print('Generating BELS location strings for:', coll)
-    df_torch['bels_location_string'] = df_torch.apply(bels_simplify, axis=1)
-    #TODO - add a hash string based on bels_location_string. Instead of using the dwc_hash, use a similar method but rewrite with a cached property
-    # this will provide a hash that will match across any version of the dataset as opposed to the loc_id I'm currently using
-    # Save to TSV
-    #df_torch.to_csv(coll + '.tsv', sep='\t')
-    torch_list.append(df_torch)
+    df_dict = {}
+    for zip_file in zip_files:
+        var_name = Path(zip_file).stem.replace('-','_')
+        var_name = var_name.replace('.','_')
+        print('Opening:', zip_file)
+        try:
+            dwca = zipfile.ZipFile(zip_file, 'r')
+            #dwca.printdir()
+            print('Reading:', zip_file, 'into', var_name )
+            if 'occurrences.csv' in dwca.namelist():
+                df = pd.read_csv(dwca.open('occurrences.csv'), low_memory=False)
+                # filter records not needed - otherwise memory issues
+                print('Before filter:', var_name, df.shape)
+                df_dict[var_name] = pre_filter(df)
+                print('After filter:', var_name, df_dict[var_name].shape)
+                #print(df_dict[var_name].shape)
+            elif 'occurrence.txt' in dwca.namelist():
+                # special case for UT PRC which is from IPT
+                df = pd.read_csv(dwca.open('occurrence.txt'), sep='\t', low_memory=False, on_bad_lines='skip')
+                # filter records not needed - otherwise memory issues
+                print('Before filter:', var_name, df.shape)
+                df_dict[var_name] = pre_filter(df)
+                print('After filter:', var_name, df_dict[var_name].shape)            
+                print(df_dict[var_name].shape)
+            elif 'occurrences.tab' in dwca.namelist():
+                df = pd.read_csv(dwca.open('occurrences.tab'), sep='\t', low_memory=False, on_bad_lines='skip')
+                # filter records not needed - otherwise memory issues
+                print('Before filter:', var_name, df.shape)
+                df_dict[var_name] = pre_filter(df)
+                print('After filter:', var_name, df_dict[var_name].shape)
+        except zipfile.BadZipFile as e:
+            print('Unable to read bad zipfile:', zip_file)
+            #TODO indicate problem in output
+        #TODO raise exception or alert if no matching occ file found
 
 
-print('Concatenating DWCAs')
-df_all = pd.concat(torch_list)
 
-#df_all.to_csv('torch_bels_locs.csv', index=False, sep='\t')
-df_all.to_csv(output_path, index=False, sep='\t')
+    print('Load of DWCAs complete.')
+    torch_list=[]
 
-print('Concatenated DwCAs saved to TSV:', output_path)
+    for coll in df_dict:
+        df = df_dict[coll]
+        print('Coll. shape', coll, df.shape)
+        df_torch = df[(df['stateProvince'] == 'Texas') | (df['stateProvince'] == 'Oklahoma')]
+        print('Filtered TX OK', coll, df_torch.shape)
+        # by iterating
+        """
+        for index, row in df_torch.iterrows():
+            #print(row['stateProvince'])
+            bels_location_string = bels_simplify(occurrence=row)
+            if bels_location_string:
+                #print(bels_location_string)
+                df_torch.loc[index,'bels_location_string'] = bels_location_string
+            #df_dict[coll][index]['bels_location_string'] = bels_location_string
+            #df_dict[coll][index]['bels_location_string'] = bels_location_string
+        """
+        # apply solution
+        # Generate loc strings
+        print('Generating BELS location strings for:', coll)
+        df_torch['bels_location_string'] = df_torch.apply(bels_simplify, axis=1)
+        #TODO - add a hash string based on bels_location_string. Instead of using the dwc_hash, use a similar method but rewrite with a cached property
+        # this will provide a hash that will match across any version of the dataset as opposed to the loc_id I'm currently using
+        # Save to TSV
+        #df_torch.to_csv(coll + '.tsv', sep='\t')
+        torch_list.append(df_torch)
+
+
+    print('Concatenating DWCAs')
+    df_all = pd.concat(torch_list)
+
+    #df_all.to_csv('torch_bels_locs.csv', index=False, sep='\t')
+    df_all.to_csv(output_path, index=False, sep='\t')
+
+    print('Concatenated DwCAs saved to TSV:', output_path)
