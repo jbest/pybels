@@ -1,10 +1,25 @@
+"""
+Add BELS metrics to a file that already has BELS strings
+
+"""
+
 from pathlib import Path
+import argparse
 
 import pandas as pd
 
-data_path = '/mnt/DATA3-4TB/BRIT_git/TORCH_georeferencing/data/TORCH-data_snapshots_TX_OK_2024-12-06/'
-input_file = 'torch_bels_locs.tsv' # stored in data_path
+#data_path = '/mnt/DATA3-4TB/BRIT_git/TORCH_georeferencing/data/TORCH-data_snapshots_TX_OK_2024-12-06/'
+#input_file = 'torch_bels_locs.tsv' # stored in data_path
 
+def arg_setup():
+    # set up argument parser
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-i", "--input", required=True, \
+        help="Input directory path for a single TAB file.")
+    ap.add_argument("-v", "--verbose", action="store_true", \
+        help="Detailed output.")
+    args = vars(ap.parse_args())
+    return args
 
 def analyze_locations_v1(df):
     """
@@ -106,12 +121,25 @@ def summarize_locations_by_region(df):
     return df.groupby(['stateProvince', 'county']).apply(get_stats, include_groups=False).reset_index()
 
 if __name__ == "__main__":
+    # set up argparse
+    args = arg_setup()
+        #print(args)
+    verbose = args['verbose']
+    input_path = args['input']
+    print(verbose, input_path)
+
     # Input DataFrame
-    #df_occ = pd.read_csv('torch_bels_locs_SAMPLE.tsv', low_memory=False, sep='\t')
-    #df_occ = pd.read_csv('data_tsv/torch_bels_locs.tsv', low_memory=False, sep='\t')
-    input_path = Path(data_path) / input_file
-    metrics_path = Path(data_path) / 'torch_bels_metrics.tsv'
-    summary_path = Path(data_path) / 'torch_bels_summary.tsv'
+    #input_path = Path(data_path) / input_file
+    input_path = Path(input_path)
+    input_dir = input_path.parent
+    input_filename = input_path.stem
+    input_filename_ext = input_path.suffix
+    #metrics_path = Path(data_path) / 'torch_bels_metrics.tsv'
+    #summary_path = Path(data_path) / 'torch_bels_summary.tsv'
+    metrics_filename = input_filename + '_metrics' + input_filename_ext
+    summary_filename = input_filename + '_summary' + input_filename_ext
+    metrics_path = input_dir / metrics_filename
+    summary_path = Path(input_dir) / summary_filename
     print('Loading:', input_path)
     df_occ = pd.read_csv(input_path, low_memory=False, sep='\t')
     
