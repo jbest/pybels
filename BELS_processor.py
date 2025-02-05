@@ -1,5 +1,6 @@
 """
 Add BELS metrics to a file that already has BELS strings
+Summarize BELS metrics per county to help prioritize georeferencing
 
 """
 
