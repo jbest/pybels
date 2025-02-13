@@ -147,6 +147,9 @@ def process_county(county_data):
         county_name=county_name
     )
     
+    # Explicitly set the Group_ID column in the processed DataFrame
+    processed_df['Group_ID'] = group_assignments
+    
     return county_name, processed_df, groups, group_assignments, last_group_id
 
 def sanitize_filename(filename, replacement=''):
