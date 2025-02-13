@@ -111,8 +111,9 @@ def compare_fields(field1, field2, method='fuzzy', threshold=80, compass1=None, 
     return locality_match and compass_match and distance_match
 
 def find_potential_duplicates(df, similarity_threshold, method='fuzzy', county_name=None):
-    i = 0
-    j = 0
+    # Reset the index of the DataFrame to ensure we start from 0
+    df = df.reset_index(drop=True)
+    
     groups = []
     group_id = 1
     
@@ -549,7 +550,7 @@ def main():
             results_dir = Path('BELS_Grouper_results')
             results_dir.mkdir(parents=True, exist_ok=True)
             results_path = results_dir / filename
-            df_bels_county.to_csv(results_path, sep='\t')
+            df_bels_county.to_csv(results_path, sep='\t', index=False)
 
 
         """
