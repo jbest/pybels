@@ -1,16 +1,14 @@
 import os
-import pandas as pd
-from tkinter import Tk
-from tkinter.filedialog import askdirectory
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-from fuzzywuzzy import fuzz
+from pathlib import Path
 from datetime import datetime
 import time
 import sys
 import re
 
-from pathlib import Path
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from fuzzywuzzy import fuzz
 
 
 def arg_setup():
@@ -161,7 +159,7 @@ def assign_sub_groups(df, eventdate_tolerance=3, recordnumber_tolerance=5, habit
     # Convert recordNumber to numeric for comparison, setting non-convertible values to NaN
     df['recordNumber'] = pd.to_numeric(df['recordNumber'], errors='coerce')
     
-    for group_id in fish_progress_bar(df['Group_ID'].unique(), desc="Assigning sub-groups"):
+    for group_id in df['Group_ID'].unique():
         group_df = df[df['Group_ID'] == group_id]
         for i, row1 in group_df.iterrows():
             if sub_groups[i] != -1:  # Skip if already assigned a sub-group
@@ -310,16 +308,18 @@ def sanitize_filename(filename, replacement=''):
 # Main function
 def main():
     # Load the configuration and fields from export_config.txt
+    """
     config, export_columns = load_export_config()
     
     if config is None or export_columns is None:
         return
+    """
     
     # Load CSV files from the selected folder
     #csv_files, folder_path = load_csv_files_from_folder()
     # input file must already have BELS metrics (bels string, group id, etc.)
-    csv_file = '/media/jbest/data3/BRIT_git/TORCH_georeferencing/data/Texas/panhandle/panhandle_test/occurrences_BELS_metrics.tab'
-    #csv_file = '/media/jbest/data3/BRIT_git/TORCH_georeferencing/data/Texas/panhandle/panhandle_test/occurrences_BELS_metrics_sample.tab'
+    #csv_file = '/media/jbest/data3/BRIT_git/TORCH_georeferencing/data/Texas/panhandle/panhandle_test/occurrences_BELS_metrics.tab'
+    csv_file = '/media/jbest/data3/BRIT_git/TORCH_georeferencing/data/Texas/panhandle/panhandle_test/occurrences_BELS_metrics_sample.tab'
     
     if csv_file:
         df = pd.read_csv(csv_file, low_memory=False, sep='\t')
