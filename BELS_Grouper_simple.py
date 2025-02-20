@@ -153,6 +153,64 @@ def find_potential_duplicates(df, similarity_threshold, method='fuzzy', county_n
 
     return groups, assigned_groups, group_id
 
+# Function to assign sub-groups based on similar eventDate, recordNumber, and habitat values
+def assign_sub_groups(df, eventdate_tolerance=3, recordnumber_tolerance=5, habitat_similarity_threshold=80, handle_null_recordnumber='0', handle_null_eventdate='0'):
+    sub_groups = [-1] * len(df)
+    sub_group_id = 1
+    
+    # Convert recordNumber to numeric for comparison, setting non-convertible values to NaN
+    df['recordNumber'] = pd.to_numeric(df['recordNumber'], errors='coerce')
+    
+    for group_id in fish_progress_bar(df['Group_ID'].unique(), desc="Assigning sub-groups"):
+        group_df = df[df['Group_ID'] == group_id]
+        for i, row1 in group_df.iterrows():
+            if sub_groups[i] != -1:  # Skip if already assigned a sub-group
+                continue
+            sub_group = [i]
+            sub_groups[i] = sub_group_id
+            
+            for j, row2 in group_df.iterrows():
+                if i >= j or sub_groups[j] != -1:
+                    continue
+                
+                # Safely parse eventDate (set to a default if invalid)
+                try:
+                    date1 = datetime.strptime(row1['eventDate'], '%Y-%m-%d') if pd.notna(row1['eventDate']) else None
+                    date2 = datetime.strptime(row2['eventDate'], '%Y-%m-%d') if pd.notna(row2['eventDate']) else None
+                except ValueError:
+                    date1, date2 = None, None
+                
+                # Handle eventDate comparison based on the config setting
+                if date1 is None or date2 is None:
+                    if handle_null_eventdate == '0':
+                        date_diff = 0  # Treat nulls as no difference
+                    else:
+                        date_diff = float('inf')  # Treat nulls as infinite difference
+                else:
+                    date_diff = abs((date1 - date2).days)
+
+                # Handle recordNumber comparison based on the config setting
+                if pd.isna(row1['recordNumber']) or pd.isna(row2['recordNumber']):
+                    if handle_null_recordnumber == '0':
+                        record_diff = 0  # Treat nulls as no difference
+                    else:
+                        record_diff = float('inf')  # Treat nulls as infinite difference
+                else:
+                    record_diff = abs(row1['recordNumber'] - row2['recordNumber'])
+                
+                # Handle habitat similarity
+                habitat_similarity = fuzz.token_sort_ratio(row1['habitat'], row2['habitat']) if pd.notna(row1['habitat']) and pd.notna(row2['habitat']) else 0
+                habitat_match = habitat_similarity >= habitat_similarity_threshold
+                
+                # Check if both date, record number differences are within tolerance, and habitat is similar
+                if date_diff <= eventdate_tolerance and record_diff <= recordnumber_tolerance and habitat_match:
+                    sub_group.append(j)
+                    sub_groups[j] = sub_group_id
+            
+            sub_group_id += 1  # Increment sub-group ID for the next sub-group
+    
+    return sub_groups
+
 # Function to check if all latitudes and longitudes in a group are identical
 def has_identical_coords(group):
     """Check if all records in the group have identical latitude and longitude."""
