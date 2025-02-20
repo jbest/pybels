@@ -153,13 +153,19 @@ def find_potential_duplicates(df, similarity_threshold, method='fuzzy', county_n
 
 # Function to assign sub-groups based on similar eventDate, recordNumber, and habitat values
 def assign_sub_groups(df, eventdate_tolerance=3, recordnumber_tolerance=5, habitat_similarity_threshold=80, handle_null_recordnumber='0', handle_null_eventdate='0'):
+    # Reset the index of the DataFrame to ensure we start from 0
+    df = df.reset_index(drop=True)
+
     sub_groups = [-1] * len(df)
     sub_group_id = 1
+
+    #print('assign_sub_groups...')
     
     # Convert recordNumber to numeric for comparison, setting non-convertible values to NaN
     df['recordNumber'] = pd.to_numeric(df['recordNumber'], errors='coerce')
     
     for group_id in df['Group_ID'].unique():
+        #print('finding sub_groups for Group_ID:', group_id)
         group_df = df[df['Group_ID'] == group_id]
         for i, row1 in group_df.iterrows():
             if sub_groups[i] != -1:  # Skip if already assigned a sub-group
@@ -314,7 +320,7 @@ def main():
     if config is None or export_columns is None:
         return
     """
-    
+
     # Load CSV files from the selected folder
     #csv_files, folder_path = load_csv_files_from_folder()
     # input file must already have BELS metrics (bels string, group id, etc.)
@@ -353,7 +359,15 @@ def main():
                 county_name=county
             )
 
+            # Add groups to dataframe
             df_bels_county['Group_ID'] = group_assignments
+            
+
+            # Assign sub-groups based on eventDate, recordNumber, and habitat similarity
+            sub_group_assignments = assign_sub_groups(df_bels_county)
+            df_bels_county['Sub_Group_ID'] = sub_group_assignments
+            
+            
             county_sanitized = sanitize_filename(county)
             filename = county_sanitized + '_BELS_Grouper.csv'
             results_dir = Path('BELS_Grouper_results')
