@@ -152,7 +152,7 @@ def find_potential_duplicates(df, similarity_threshold, method='fuzzy', county_n
     return groups, assigned_groups, group_id
 
 # Function to assign sub-groups based on similar eventDate, recordNumber, and habitat values
-def assign_sub_groups(df, eventdate_tolerance=3, recordnumber_tolerance=5, habitat_similarity_threshold=80, handle_null_recordnumber='0', handle_null_eventdate='0'):
+def assign_sub_groups(df, eventdate_tolerance=3, recordnumber_tolerance=5, habitat_similarity_threshold=95, handle_null_recordnumber='0', handle_null_eventdate='0'):
     # Reset the index of the DataFrame to ensure we start from 0
     df = df.reset_index(drop=True)
 
@@ -214,6 +214,15 @@ def assign_sub_groups(df, eventdate_tolerance=3, recordnumber_tolerance=5, habit
             sub_group_id += 1  # Increment sub-group ID for the next sub-group
     
     return sub_groups
+"""
+Not included from original Grouper:
+load_export_config
+filter_by_collection_code
+load_csv_files_from_folder
+count_coords
+save_filtered_groups_to_csv
+
+"""
 
 # Function to check if all latitudes and longitudes in a group are identical
 def has_identical_coords(group):
@@ -310,6 +319,20 @@ def sanitize_filename(filename, replacement=''):
     filename = filename[:255]
     return filename
 
+def add_unique_id_count(df):
+    """
+    Add a column with the count of unique bels_id values for each grouper_id.
+    Modifies the DataFrame in place.
+    
+    Parameters:
+    df (pandas.DataFrame): DataFrame with bels_id and grouper_id columns
+    """
+    # Group by grouper_id and count unique bels_id values
+    unique_counts = df.groupby('Group_ID')['bels_location_id'].nunique()
+    
+    # Map these counts back to the original DataFrame, modifying it in place
+    df['id_score'] = df['Group_ID'].map(unique_counts)
+
 
 # Main function
 def main():
@@ -366,6 +389,9 @@ def main():
             # Assign sub-groups based on eventDate, recordNumber, and habitat similarity
             sub_group_assignments = assign_sub_groups(df_bels_county)
             df_bels_county['Sub_Group_ID'] = sub_group_assignments
+
+            # Add location score
+            add_unique_id_count(df_bels_county)
             
             
             county_sanitized = sanitize_filename(county)

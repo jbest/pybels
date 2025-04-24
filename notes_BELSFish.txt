@@ -1,0 +1,5 @@
+TORCH BELS / BELSFish analysis notes
+
+First use pybels_fast.py to generate a single CSV with all occurrence records from the DwC data sources
+
+

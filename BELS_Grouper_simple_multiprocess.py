@@ -1,10 +1,4 @@
 import os
-import pandas as pd
-from tkinter import Tk
-from tkinter.filedialog import askdirectory
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-from fuzzywuzzy import fuzz
 from datetime import datetime
 import time
 import sys
@@ -12,6 +6,12 @@ import re
 import multiprocessing as mp
 from functools import partial
 from pathlib import Path
+
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from fuzzywuzzy import fuzz
+
 
 # [Previous helper functions remain the same]
 def extract_compass_direction(locality):
