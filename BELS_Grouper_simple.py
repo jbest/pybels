@@ -4,6 +4,7 @@ from datetime import datetime
 import time
 import sys
 import re
+import argparse
 
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -14,7 +15,7 @@ from fuzzywuzzy import fuzz
 def arg_setup():
     # set up argument parser
     ap = argparse.ArgumentParser()
-    ap.add_argument("-i", "--input", required=True, \
+    ap.add_argument("-i", "--input_path", required=True, \
         help="Input directory path for a single TAB file.")
     ap.add_argument("-v", "--verbose", action="store_true", \
         help="Detailed output.")
@@ -343,12 +344,18 @@ def main():
     if config is None or export_columns is None:
         return
     """
+    # set up argparse
+    args = arg_setup()
+    verbose = args['verbose']
+    input_path = args['input_path']
+
 
     # Load CSV files from the selected folder
     #csv_files, folder_path = load_csv_files_from_folder()
     # input file must already have BELS metrics (bels string, group id, etc.)
     #csv_file = '/media/jbest/data3/BRIT_git/TORCH_georeferencing/data/Texas/panhandle/panhandle_test/occurrences_BELS_metrics.tab'
-    csv_file = '/media/jbest/data3/BRIT_git/TORCH_georeferencing/data/Texas/panhandle/panhandle_test/occurrences_BELS_metrics_sample.tab'
+    #csv_file = '/media/jbest/data3/BRIT_git/TORCH_georeferencing/data/Texas/panhandle/panhandle_test/occurrences_BELS_metrics_sample.tab'
+    csv_file = input_path
     
     if csv_file:
         df = pd.read_csv(csv_file, low_memory=False, sep='\t')
