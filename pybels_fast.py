@@ -10,6 +10,7 @@ import zipfile
 import glob
 from pathlib import Path
 import argparse
+import re
 
 import pandas as pd
 
@@ -82,6 +83,17 @@ def bels_simplify(occurrence):
     matchstr = super_simplify(sanscoordslocmatchstr)
     return matchstr
 
+# Function to normalize county names
+# Borrowed from CountyChopper
+def normalize_county_name(county_name):
+    if isinstance(county_name, str):
+        county_name = county_name.lower().strip()
+        county_name = re.sub(r'(county|co\.?|[\?\.])$', '', county_name).strip()
+        return county_name.title()
+    else:
+        return ''
+
+
 def arg_setup():
     # set up argument parser
     ap = argparse.ArgumentParser()
@@ -115,15 +127,36 @@ if __name__ == '__main__':
         print('ZIP directory path (-z) or TSV file path (-i) needed.')
 
     if input_path:
-        df = pd.read_csv(input_path, sep='\t', low_memory=False, on_bad_lines='skip')
+        # TSV import
+        #df = pd.read_csv(input_path, sep='\t', low_memory=False, on_bad_lines='skip')#
+        input_path = Path(input_path)
+        # CSV import
+        df = pd.read_csv(input_path, low_memory=False, on_bad_lines='skip', encoding = 'ISO-8859-1')
         print('Data shape', df.shape)
         df_torch = df[(df['stateProvince'] == 'Texas') | (df['stateProvince'] == 'Oklahoma')]
         print('Filtered TX OK', df_torch.shape)
+
+        # Add normalized county name
+        df_torch.rename(columns={'county': 'county_original'}, inplace=True)
+        df_torch['county'] = df_torch['county_original'].apply(normalize_county_name)
+
         # apply solution
         # Generate loc strings
         print('Generating BELS location strings for:', input_path)
         df_torch['bels_location_string'] = df_torch.apply(bels_simplify, axis=1)
-        df_torch.to_csv('BELS_test_XXX.tsv', sep='\t')
+        # TEST augment BELS data here
+        # TODO move to function
+        # Add location ID
+        df_torch['bels_location_id'] = df_torch.groupby(['bels_location_string']).ngroup()
+        # Add location dup count
+        df_torch['dup_loc_count'] = df_torch.groupby(['bels_location_string']).transform('size')
+
+        filename = 'BELS_test_XXX_normalized.tsv'
+        #print('Concatenated, filtered and BELS-enhanced DwCA saved to TSV:', output_path)
+        print('Concatenated, filtered and BELS-enhanced DwCA saved to TSV:', filename)
+        
+        df_torch.to_csv(filename, sep='\t')
+
 
     if zip_dir:
         # opening the zip file in READ mode 
