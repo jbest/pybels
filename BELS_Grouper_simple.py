@@ -334,6 +334,16 @@ def add_unique_id_count(df):
     # Map these counts back to the original DataFrame, modifying it in place
     df['id_score'] = df['Group_ID'].map(unique_counts)
 
+# Function to normalize county names
+# Borrowed from CountyChopper
+def normalize_county_name(county_name):
+    if isinstance(county_name, str):
+        county_name = county_name.lower().strip()
+        county_name = re.sub(r'(county|co\.?|[\?\.])$', '', county_name).strip()
+        return county_name.title()
+    else:
+        return ''
+
 
 # Main function
 def main():
@@ -358,7 +368,11 @@ def main():
     csv_file = input_path
     
     if csv_file:
+        # TSV import
         df = pd.read_csv(csv_file, low_memory=False, sep='\t')
+        # CSV import
+        #df = pd.read_csv(csv_file, low_memory=False, encoding = 'utf-8')
+        #df = pd.read_csv(csv_file, low_memory=False, encoding = 'ISO-8859-1')
         #df.sort_values('B').groupby('A').first()
         #print(df)
         #print(df.columns.to_list())
@@ -366,7 +380,10 @@ def main():
         #print(df_bels_reps)
         bels_location_ids = df['bels_location_id'].unique()
         print('bels_location_ids unique count:', len(bels_location_ids))
-        #TODO Normalize county names
+        #Normalize county names
+        #df.rename(columns={'county': 'county_original'}, inplace=True)
+        #df['county'] = df['county_original'].apply(normalize_county_name)
+
         counties = df['county'].unique()
         print('counties unique count:', len(counties))
 
