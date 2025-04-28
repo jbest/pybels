@@ -1,5 +1,10 @@
 TORCH BELS / BELSFish analysis notes
 
-First use pybels_fast.py to generate a single CSV with all occurrence records from the DwC data sources
+First use pybels_fast.py to:
+	- generate a single CSV with BELS string from all occurrence records from the DwC data sources in ZIP files
+	- or generate a TSV with BELS string from single TSV input
 
+XXX Next use Jupyter Notebook analyze_loc_matches_local.ipynb to analyze and add other BELs info
+pybels_fast.py now can add all the additional BELS metrics
 
+Next run BELS_Grouper_simple.py on the output from above
