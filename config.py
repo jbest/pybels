@@ -1,0 +1,38 @@
+"""
+Configuration primarily for fishnet.py used to filter results
+replaces the Chopper_Config.txt
+"""
+
+#Records from these collections bypass all filters.
+collectionWhitelist = ['BRIT','SMU','ACU','BCNWR','HSU','TAC','TCSW','NLU','VDB','LL','TEX','FWNC']
+
+#Records from these collections are always filtered out.
+collectionBlacklist = ['NY','MO','HUH']
+
+#Records with these strings are always filtered out. 
+georeferenceSourcesBlacklist = 'GEOLocate Batch Processing Tool'
+#georeferenceRemarksBlacklist: 
+
+# Records with this coordinate uncertainty threshold (set to any integer value, e.g., 10000) are filtered out.
+coordinateUncertaintyThreshold = 10000
+# seems to be unused: coordinateUncertaintyThreshold
+
+# Enable or disable filtering for records with null values in 'coordinateUncertaintyInMeters' field
+filterCoordinateUncertaintyNull = True
+
+# Toggle for removing null georeferencedBY, georeferenceRemarks
+# (True="don't include nulls"/False="include nulls")
+filterGeoreferencedBy = False
+filterGeoreferenceRemarks = False
+
+# Enable or disable filtering for records where both 'georeferencedBy' AND 'georeferenceRemarks' are null
+filterGeoreferencedByAndRemarksNull = True
+# seems filterGeoreferencedByAndRemarksNull is not used
+
+# State to process
+#TODO Change to states plural
+state = 'Texas'
+
+counties = ['Throckmorton','Garza','Mitchell','Wichita','Deaf Smith','Randall','Lubbock',
+	'Potter','Hutchinson','Coleman','Hemphill','Hardeman','Tom Green','Ochiltree','Shackelford',
+	'Roberts','Howard','Oldham','Briscoe','Lipscomb','Wilbarger','Dallam','Crosby','Nolan']
