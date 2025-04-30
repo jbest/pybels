@@ -107,7 +107,9 @@ def sanitize_filename(filename, replacement=''):
     filename = filename[:255]
     return filename
 
-def filter_data(data=None, collection_whitelist=None, collection_blacklist=None):
+def filter_data(data=None, collection_whitelist=None, collection_blacklist=None, 
+    coordinate_uncertainty_threshold=None, filter_coordinate_uncertainty_null=None,
+    filterGeoreferenceRemarks=None, filterGeoreferencedBy=None):
     if 'stateProvince' not in data.columns or 'county' not in data.columns or 'collectionCode' not in data.columns:
         # This error was raised when a TSV was opened as a CSV
         print('columns:', data.columns)
@@ -134,13 +136,39 @@ def filter_data(data=None, collection_whitelist=None, collection_blacklist=None)
     # Exclude records with institutionCode on the blacklist
     # Changing this to institutionCode, originally collectionCode
     data = data[~data['institutionCode'].isin(collection_blacklist)]
-    print('Blacklist removed data shape:', data.shape)
+    print('Blacklist removed (whitelist + graylist) data shape:', data.shape)
 
     # Create graylist, will add whitelist back after further filtering
     graylist_data = data[~data['institutionCode'].isin(collection_whitelist)]
-    print('Graylist data shape:', graylist_data.shape)
+    print('Graylist (no whitelist, no blacklist) data shape:', graylist_data.shape)
+    # Remove records with null locality
+    graylist_data = graylist_data[graylist_data['locality'].notnull()]
+    print('Graylist with locality data shape:', graylist_data.shape)
+    # Apply coordinateUncertaintyInMeters filter
+    # TODO TEMP
+    #coordinate_uncertainty_threshold = 10000
+    #filter_coordinate_uncertainty_null = True
+    if filter_coordinate_uncertainty_null:
+        graylist_data = graylist_data[(graylist_data['coordinateUncertaintyInMeters'] < coordinate_uncertainty_threshold)]
+        print(f'Graylist with coordinateUncertaintyInMeters < {coordinate_uncertainty_threshold} data shape:', graylist_data.shape)
+    # Apply filter to exclude records with null CoordinateUncertainty if enabled
+    if filter_coordinate_uncertainty_null:
+        graylist_data = graylist_data[graylist_data['coordinateUncertaintyInMeters'].notnull()]
 
-    #TODO add grey list filtering here - geo etc.
+    # Remove records with null locality only if institutionCode is not the whitelist (graylist)
+    #graylist_data = graylist_data[graylist_data['locality'].notnull()]
+    #data_with_locality = graylist_data[graylist_data['locality'].notnull()]
+    #data_null_locality = data[data['locality'].isnull() & data['institutionCode'].isin(collection_whitelist)]
+    #graylist_data = pd.concat([data_with_locality, data_null_locality])
+    
+    # Apply georeferencedBY and georeferenceRemarks filters if toggled on in the config
+    if filterGeoreferencedBy:
+        graylist_data = graylist_data[graylist_data['georeferencedBy'].notnull()]
+        print('Graylist with null georeferencedBy data shape:', graylist_data.shape)
+
+    if filterGeoreferenceRemarks:
+        graylist_data = graylist_data[graylist_data['georeferenceRemarks'].notnull()]
+        print('Graylist with null georeferenceRemarks data shape:', graylist_data.shape)
 
     # Combine the filtered data with the whitelisted data that bypasses all filters
     final_data = pd.concat([whitelist_data, graylist_data])
@@ -186,9 +214,18 @@ if __name__ == "__main__":
     if not config:
         print('config not loaded')
     else:
+        #TODO load from config:
+        coordinate_uncertainty_threshold=10000
+        filter_coordinate_uncertainty_null=True
+        filterGeoreferencedBy = True
+        filterGeoreferenceRemarks = True
         collection_whitelist, collection_blacklist, county_list, state_name = config
         print(f'Retaining all records from whitelist: {collection_whitelist}')
         print(f'Excluding all records from blacklist: {collection_blacklist}')
+        print(f'Excluding all > coordinate_uncertainty_threshold: {coordinate_uncertainty_threshold}')
+        print(f'Excluding all records filter_coordinate_uncertainty_null: {filter_coordinate_uncertainty_null}')
+        print(f'Excluding all null values of filterGeoreferencedBy: {filterGeoreferencedBy}')
+        print(f'Excluding all null values of filterGeoreferenceRemarks: {filterGeoreferenceRemarks}')
 
         if args['out']:
             print('output path:', args['out'])
@@ -207,5 +244,12 @@ if __name__ == "__main__":
             df_data = None
 
         print('Input data shape', df_data.shape)
-        df_filtered = filter_data(data=df_data, collection_whitelist=collection_whitelist, collection_blacklist=collection_blacklist)
+        df_filtered = filter_data(data=df_data, collection_whitelist=collection_whitelist, 
+            collection_blacklist=collection_blacklist, 
+            filter_coordinate_uncertainty_null=filter_coordinate_uncertainty_null,
+            coordinate_uncertainty_threshold=coordinate_uncertainty_threshold,
+            filterGeoreferencedBy = filterGeoreferencedBy,
+            filterGeoreferenceRemarks = filterGeoreferenceRemarks
+        )
         print('Filtered data shape', df_filtered.shape)
+        #df_filtered.to_csv('BELS_Fish_fishnet_sample.csv', index=False)
