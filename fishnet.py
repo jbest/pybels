@@ -154,12 +154,6 @@ def filter_data(data=None, collection_whitelist=None, collection_blacklist=None,
     # Apply filter to exclude records with null CoordinateUncertainty if enabled
     if filter_coordinate_uncertainty_null:
         graylist_data = graylist_data[graylist_data['coordinateUncertaintyInMeters'].notnull()]
-
-    # Remove records with null locality only if institutionCode is not the whitelist (graylist)
-    #graylist_data = graylist_data[graylist_data['locality'].notnull()]
-    #data_with_locality = graylist_data[graylist_data['locality'].notnull()]
-    #data_null_locality = data[data['locality'].isnull() & data['institutionCode'].isin(collection_whitelist)]
-    #graylist_data = pd.concat([data_with_locality, data_null_locality])
     
     # Apply georeferencedBY and georeferenceRemarks filters if toggled on in the config
     if filterGeoreferencedBy:
@@ -174,28 +168,7 @@ def filter_data(data=None, collection_whitelist=None, collection_blacklist=None,
     final_data = pd.concat([whitelist_data, graylist_data])
     print('final_data (whitelist_data concat graylist_data) shape', final_data.shape)
 
-    # Filter for entries only in the selected state and the counties in the list
-    #state_data = final_data[(final_data['stateProvince'].str.lower() == state_name.lower()) & (final_data['normalized_county'].isin(county_list))]
-    #state_data = final_data
-
-    #unique_counties = state_data['normalized_county'].nunique()
-
-    """
-    # Not splitting by counties in this version
-    for county, county_data in tqdm(state_data.groupby('normalized_county'), total=unique_counties, desc=f"Processing {state_name} Counties"):
-        output_filename = f"{state_name}_{county}.csv"
-        output_filename = sanitize_filename(output_filename, replacement='-')
-        output_path = os.path.join(output_dir, output_filename)
-        county_data.to_csv(output_path, index=False)
-    """
-
-    #print(f"Files created in directory: {output_dir}")
-    #return state_data
     return final_data
-
-
-# Run the function
-#split_csv_by_state()
 
 # moving config load to main
 if __name__ == "__main__":
