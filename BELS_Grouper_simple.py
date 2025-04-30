@@ -10,6 +10,7 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from fuzzywuzzy import fuzz
+import time
 
 
 def arg_setup():
@@ -354,6 +355,7 @@ def main():
     if config is None or export_columns is None:
         return
     """
+
     # set up argparse
     args = arg_setup()
     verbose = args['verbose']
@@ -429,4 +431,6 @@ def main():
         print("No valid CSV files to process.")
 
 if __name__ == "__main__":
+    start_time = time.time()
     main()
+    print("--- %s seconds ---" % (time.time() - start_time))
