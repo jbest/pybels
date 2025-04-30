@@ -114,6 +114,8 @@ def filter_data(data=None, collection_whitelist=None, collection_blacklist=None)
         raise ValueError("The CSV file must contain 'stateProvince', 'county', and 'collectionCode' columns.")
 
 
+    print('Pre-filter data shape:', data.shape)
+
     # Run the pre-check for missing collectionCode
     #data = count_null_collectioncode(data)
 
@@ -121,24 +123,32 @@ def filter_data(data=None, collection_whitelist=None, collection_blacklist=None)
     #data['normalized_county'] = data['county'].apply(normalize_county_name)
 
     # Apply whitelist/blacklist filter for collectionCode
-    data['collectionCode'] = data['collectionCode'].astype(str)
-    print('Pre-filter data shape:', data.shape)
+    # TODO not sure what this is used for. 
+    #data['collectionCode'] = data['collectionCode'].astype(str)
+    #print('Pre-filter data shape:', data.shape)
     
     # Separate out records that are whitelisted
-    whitelist_data = data[data['collectionCode'].isin(collection_whitelist)]
+    whitelist_data = data[data['institutionCode'].isin(collection_whitelist)]
     print('whitelist_data shape:', whitelist_data.shape)
 
-    # Exclude records with collectionCode on the blacklist
-    data = data[~data['collectionCode'].isin(collection_blacklist)]
+    # Exclude records with institutionCode on the blacklist
+    # Changing this to institutionCode, originally collectionCode
+    data = data[~data['institutionCode'].isin(collection_blacklist)]
     print('Blacklist removed data shape:', data.shape)
 
+    # Create graylist, will add whitelist back after further filtering
+    graylist_data = data[~data['institutionCode'].isin(collection_whitelist)]
+    print('Graylist data shape:', graylist_data.shape)
+
+    #TODO add grey list filtering here - geo etc.
+
     # Combine the filtered data with the whitelisted data that bypasses all filters
-    final_data = pd.concat([whitelist_data, data])
-    print('final_data (whitelist_data concat data) shape', final_data.shape)
+    final_data = pd.concat([whitelist_data, graylist_data])
+    print('final_data (whitelist_data concat graylist_data) shape', final_data.shape)
 
     # Filter for entries only in the selected state and the counties in the list
     #state_data = final_data[(final_data['stateProvince'].str.lower() == state_name.lower()) & (final_data['normalized_county'].isin(county_list))]
-    state_data = final_data
+    #state_data = final_data
 
     #unique_counties = state_data['normalized_county'].nunique()
 
@@ -152,7 +162,8 @@ def filter_data(data=None, collection_whitelist=None, collection_blacklist=None)
     """
 
     #print(f"Files created in directory: {output_dir}")
-    return state_data
+    #return state_data
+    return final_data
 
 
 # Run the function
@@ -176,23 +187,25 @@ if __name__ == "__main__":
         print('config not loaded')
     else:
         collection_whitelist, collection_blacklist, county_list, state_name = config
+        print(f'Retaining all records from whitelist: {collection_whitelist}')
+        print(f'Excluding all records from blacklist: {collection_blacklist}')
 
-    if args['out']:
-        print('output path:', args['out'])
-        output_dir = Path(args['out']).resolve()
-    else:
-        output_dir = "fishnet_output"
-    print('output_dir:', output_dir)
+        if args['out']:
+            print('output path:', args['out'])
+            output_dir = Path(args['out']).resolve()
+        else:
+            output_dir = "fishnet_output"
+        print('output_dir:', output_dir)
 
-    print('Loading data...')
-    try:
-        #data = pd.read_csv(input_csv, encoding='ISO-8859-1', dtype=str, on_bad_lines='skip', low_memory=False)
-        # Loading TSV format
-        df_data = pd.read_csv(input_csv, on_bad_lines='skip', low_memory=False, sep='\t')
-    except (UnicodeDecodeError, pd.errors.ParserError) as e:
-        print(f"Error reading the file: {e}")
-        df_data = None
+        print('Loading data...')
+        try:
+            #data = pd.read_csv(input_csv, encoding='ISO-8859-1', dtype=str, on_bad_lines='skip', low_memory=False)
+            # Loading TSV format
+            df_data = pd.read_csv(input_csv, on_bad_lines='skip', low_memory=False, sep='\t')
+        except (UnicodeDecodeError, pd.errors.ParserError) as e:
+            print(f"Error reading the file: {e}")
+            df_data = None
 
-    print('Input data shape', df_data.shape)
-    df_filtered = filter_data(data=df_data, collection_whitelist=collection_whitelist, collection_blacklist=collection_blacklist)
-    print('Filtered data shape', df_filtered.shape)
+        print('Input data shape', df_data.shape)
+        df_filtered = filter_data(data=df_data, collection_whitelist=collection_whitelist, collection_blacklist=collection_blacklist)
+        print('Filtered data shape', df_filtered.shape)
