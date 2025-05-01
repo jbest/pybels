@@ -17,9 +17,9 @@ import pandas as pd
 #BELS
 from id_utils import dwc_location_hash, location_match_str, super_simplify
 from dwca_terms import locationmatchsanscoordstermlist
-from bels_query import get_location_by_hashid, row_as_dict
-from dwca_vocab_utils import darwinize_dict
-from chardet import UniversalDetector
+#from bels_query import get_location_by_hashid, row_as_dict
+#from dwca_vocab_utils import darwinize_dict
+#from chardet import UniversalDetector
 from dwca_utils import safe_read_csv_row, lower_dict_keys
 
 # specifying the zip file name 
@@ -127,12 +127,15 @@ if __name__ == '__main__':
         print('ZIP directory path (-z) or TSV file path (-i) needed.')
 
     if input_path:
+        # TSV or CSV using Sniffer
+        df = pd.read_csv(input_path, sep=None, on_bad_lines='skip')
         # TSV import
-        #df = pd.read_csv(input_path, sep='\t', low_memory=False, on_bad_lines='skip')#
+        #df = pd.read_csv(input_path, sep='\t', low_memory=False, on_bad_lines='skip')
         input_path = Path(input_path)
         # CSV import
-        df = pd.read_csv(input_path, low_memory=False, on_bad_lines='skip', encoding = 'ISO-8859-1')
+        #df = pd.read_csv(input_path, low_memory=False, on_bad_lines='skip', encoding = 'ISO-8859-1')
         print('Data shape', df.shape)
+        #TODO make filtering customizable, remove TORCH in var names
         df_torch = df[(df['stateProvince'] == 'Texas') | (df['stateProvince'] == 'Oklahoma')]
         print('Filtered TX OK', df_torch.shape)
 
@@ -151,12 +154,13 @@ if __name__ == '__main__':
         # Add location dup count
         df_torch['dup_loc_count'] = df_torch.groupby(['bels_location_string']).transform('size')
 
-        filename = 'BELS_test_XXX_normalized.tsv'
-        #print('Concatenated, filtered and BELS-enhanced DwCA saved to TSV:', output_path)
-        print('Concatenated, filtered and BELS-enhanced DwCA saved to TSV:', filename)
+        output_dir = input_path.parent
+        input_filename = input_path.stem
+        filename = input_filename + '_BELS.tsv'
+        output_path = output_dir / filename
         
-        df_torch.to_csv(filename, sep='\t')
-
+        df_torch.to_csv(output_path, sep='\t', index=False)
+        print('BELS-enhanced file saved to TSV:', output_path)
 
     if zip_dir:
         # opening the zip file in READ mode 
