@@ -216,15 +216,7 @@ def assign_sub_groups(df, eventdate_tolerance=3, recordnumber_tolerance=5, habit
             sub_group_id += 1  # Increment sub-group ID for the next sub-group
     
     return sub_groups
-"""
-Not included from original Grouper:
-load_export_config
-filter_by_collection_code
-load_csv_files_from_folder
-count_coords
-save_filtered_groups_to_csv
 
-"""
 
 # Function to check if all latitudes and longitudes in a group are identical
 def has_identical_coords(group):
@@ -374,17 +366,8 @@ def main():
         df = pd.read_csv(csv_file, low_memory=False, sep='\t')
         # CSV import
         #df = pd.read_csv(csv_file, low_memory=False, encoding = 'utf-8')
-        #df = pd.read_csv(csv_file, low_memory=False, encoding = 'ISO-8859-1')
-        #df.sort_values('B').groupby('A').first()
-        #print(df)
-        #print(df.columns.to_list())
-        #df_bels_reps = df.groupby('bels_location_id').first()
-        #print(df_bels_reps)
         bels_location_ids = df['bels_location_id'].unique()
         print('bels_location_ids unique count:', len(bels_location_ids))
-        #Normalize county names
-        #df.rename(columns={'county': 'county_original'}, inplace=True)
-        #df['county'] = df['county_original'].apply(normalize_county_name)
 
         counties = df['county'].unique()
         print('counties unique count:', len(counties))
@@ -392,7 +375,6 @@ def main():
         print("Initial df DataFrame info:")
         print(df.info())
         print("\nUnique counties:", counties)
-
         """
         Processing only uniqiue BELS locations to reduce processing time
         for Grouper. Results are merged with all matching BELS locations.
@@ -402,11 +384,6 @@ def main():
         df_bels_unique = df.groupby('bels_location_id').first().reset_index()
         print("Reduced df_bels_unique info:")
         print(df_bels_unique.info())
-        #print('Converting records to pre-Grouper state...')
-        # Create a "pre Grouper" sample file to test with
-        #df_ungrouped = df.drop(columns=['Group_ID','Sub_Group_ID','id_score'])
-        #print('Pre-Grouper df_ungrouped DataFrame info:')
-        #print(df_ungrouped.info())
 
         for county in counties:
             #df_bels_county = df[df['county'] == county]
@@ -431,7 +408,6 @@ def main():
             sub_group_assignments = assign_sub_groups(df_bels_county)
             df_bels_county['Sub_Group_ID'] = sub_group_assignments
 
-            #
             df_bels_county_all = df[df['county'] == county]
             
             # Add location score
