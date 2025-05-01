@@ -1,7 +1,7 @@
 """
 Based on the filtering processs in CountyChopper. 
-Meant to be used after pybels_fast.py
-and before BELS_Grouper_simple.py
+Meant to be used after pybels.py
+and before BELS_Grouper.py
 
 """
 
@@ -57,10 +57,9 @@ def count_null_collectioncode(df):
 
     return df
 
-# Function to read configurations from Chopper_Config.txt in the script folder
+# Function to read configurations
+# TODO convert cofig to an INI or YAML format and use config parser
 def load_configurations(config_path=None):
-    #script_dir = os.path.dirname(os.path.realpath(__file__))
-    #config_file = os.path.join(script_dir, 'Chopper_Config.txt')
 
     if not os.path.exists(config_path):
         print("Configuration file 'Chopper_Config.txt' not found in script directory.")
@@ -174,7 +173,6 @@ def filter_data(data=None, collection_whitelist=None, collection_blacklist=None,
 
     return final_data
 
-# moving config load to main
 if __name__ == "__main__":
     args = arg_setup()
 
@@ -183,9 +181,9 @@ if __name__ == "__main__":
 
     print('input_csv:', input_csv)
 
-    # Load configurations from Chopper_Config.txt
+    # Load configurations
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    config_file_path = os.path.join(script_dir, 'Chopper_Config.txt')
+    config_file_path = os.path.join(script_dir, 'config_fishnet.txt')
     
     config = load_configurations(config_path=config_file_path)
     if not config:
