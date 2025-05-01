@@ -237,62 +237,6 @@ def count_allowed_institutions(df, allowed_institutions):
     
     return group_counts
 
-# Modify the save_filtered_groups_to_csv function to include compassDirection and distance
-def save_filtered_groups_to_csv(input_filename, df, group_assignments, sub_group_assignments, min_size, export_columns, allowed_institutions):
-    df['Group_ID'] = group_assignments  # Add the group ID to the DataFrame
-    df['Sub_Group_ID'] = sub_group_assignments  # Add the sub-group ID to the DataFrame
-    
-    # Add compassDirection and distance to export_columns if not already included
-    if 'compassDirection' not in export_columns:
-        export_columns.append('compassDirection')
-    if 'distance' not in export_columns:
-        export_columns.append('distance')
-    if 'distanceUnit' not in export_columns:
-        export_columns.append('distanceUnit')
-    
-    # Filter to only include groups that have more than the specified number of records
-    group_counts = df['Group_ID'].value_counts()
-    large_groups = group_counts[group_counts > min_size].index
-    
-    # Exclude records with blank or null localities and identical decimalLatitude and decimalLongitude
-    filtered_df = df[
-        df['Group_ID'].isin(large_groups) & 
-        df['locality'].notnull() & df['locality'].str.strip().ne('')
-    ]
-    
-    # Filter out groups where all latitudes and longitudes are identical
-    filtered_df = filtered_df.groupby('Group_ID').filter(lambda x: not has_identical_coords(x))
-    
-    # Filter by allowed institutionCode
-    filtered_df = filter_by_institution(filtered_df, allowed_institutions)
-    
-    if not filtered_df.empty:
-        # Count the number of allowed institutions in each group
-        allowed_institution_counts = count_allowed_institutions(filtered_df, allowed_institutions)
-        
-        # Merge the counts back to the filtered DataFrame
-        filtered_df = filtered_df.merge(allowed_institution_counts, on='Group_ID', how='left')
-        
-        # Reorder columns based on the configuration
-        if export_columns:
-            filtered_df = filtered_df[export_columns + ['allowed_institution_count']]
-        
-        # Sort by allowed institution count, then by Group_ID, Sub_Group_ID, and eventDate
-        if 'eventDate' in filtered_df.columns:
-            filtered_df.sort_values(by=['allowed_institution_count', 'Group_ID', 'Sub_Group_ID', 'eventDate'], ascending=[False, True, True, True], inplace=True)
-        else:
-            filtered_df.sort_values(by=['allowed_institution_count', 'Group_ID', 'Sub_Group_ID'], ascending=[False, True, True], inplace=True)
-        
-        # Automatically create the output filename by appending "-groups.csv"
-        output_filename = input_filename.replace('.csv', '-groups.csv')
-        
-        # Save the filtered DataFrame to the output file
-        filtered_df.to_csv(output_filename, index=False)
-        print(f"Group data saved to {output_filename}")
-    else:
-        print(f"No groups found with more than {min_size} records and non-blank localities.")
-
-import re
 
 def sanitize_filename(filename, replacement=''):
     """
@@ -423,13 +367,13 @@ def main():
 
             
             county_sanitized = sanitize_filename(county)
-            filename = county_sanitized + '_BELS_Grouper.csv'
-            filename_unmerged = county_sanitized + '_UNMERGED_BELS_Grouper.csv'
+            filename = county_sanitized + '_BELS_Grouper.tsv'
+            filename_unmerged = county_sanitized + '_UNMERGED_BELS_Grouper.tsv'
             results_dir = Path('BELS_Grouper_results')
             results_dir.mkdir(parents=True, exist_ok=True)
             results_path = results_dir / filename
             results_unmerged_path = results_dir / filename_unmerged
-            df_bels_county.to_csv(results_unmerged_path, sep='\t', index=False)
+            #df_bels_county.to_csv(results_unmerged_path, sep='\t', index=False)
             df_county_merged.to_csv(results_path, sep='\t', index=False)
 
     else:
