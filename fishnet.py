@@ -164,6 +164,10 @@ def filter_data(data=None, collection_whitelist=None, collection_blacklist=None,
         graylist_data = graylist_data[graylist_data['georeferenceRemarks'].notnull()]
         print('Graylist with null georeferenceRemarks data shape:', graylist_data.shape)
 
+    # Graylist summary before merging
+    graylist_institutions = graylist_data['institutionCode'].unique()
+    print('Graylist institution codes:', graylist_institutions)
+
     # Combine the filtered data with the whitelisted data that bypasses all filters
     final_data = pd.concat([whitelist_data, graylist_data])
     print('final_data (whitelist_data concat graylist_data) shape', final_data.shape)
@@ -195,6 +199,7 @@ if __name__ == "__main__":
         collection_whitelist, collection_blacklist, county_list, state_name = config
         print(f'Retaining all records from whitelist: {collection_whitelist}')
         print(f'Excluding all records from blacklist: {collection_blacklist}')
+        print('Filtering graylist:')
         print(f'Excluding all > coordinate_uncertainty_threshold: {coordinate_uncertainty_threshold}')
         print(f'Excluding all records filter_coordinate_uncertainty_null: {filter_coordinate_uncertainty_null}')
         print(f'Excluding all null values of filterGeoreferencedBy: {filterGeoreferencedBy}')
@@ -225,4 +230,18 @@ if __name__ == "__main__":
             filterGeoreferenceRemarks = filterGeoreferenceRemarks
         )
         print('Filtered data shape', df_filtered.shape)
-        #df_filtered.to_csv('BELS_Fish_fishnet_sample.csv', index=False)
+        # drop any unnamed columns
+        df_filtered.drop(df_filtered.columns[df_filtered.columns.str.contains('unnamed',case = False)],axis = 1, inplace = True)
+        print('Filtered data shape (unnamed removed)', df_filtered.shape)
+
+        if input_csv:
+            # Create output filename
+            input_filename_stem = input_csv.stem
+            output_filename = input_filename_stem + '_filtered.csv'
+            #print('input_filename',input_filename)
+            df_filtered.to_csv(output_filename, index=False)
+            print('Ouput saved to:', output_filename)
+        else:
+            print('no input_csv, terminating')
+
+        
