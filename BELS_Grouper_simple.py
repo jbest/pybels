@@ -389,12 +389,28 @@ def main():
         counties = df['county'].unique()
         print('counties unique count:', len(counties))
 
-        
-        print("Initial DataFrame info:")
+        print("Initial df DataFrame info:")
         print(df.info())
         print("\nUnique counties:", counties)
+
+        """
+        Processing only uniqiue BELS locations to reduce processing time
+        for Grouper. Results are merged with all matching BELS locations.
+        """
+        print('Reducing records to unique BELS values...')
+        # Make a representative datset with one from each BELS location
+        df_bels_unique = df.groupby('bels_location_id').first().reset_index()
+        print("Reduced df_bels_unique info:")
+        print(df_bels_unique.info())
+        #print('Converting records to pre-Grouper state...')
+        # Create a "pre Grouper" sample file to test with
+        #df_ungrouped = df.drop(columns=['Group_ID','Sub_Group_ID','id_score'])
+        #print('Pre-Grouper df_ungrouped DataFrame info:')
+        #print(df_ungrouped.info())
+
         for county in counties:
-            df_bels_county = df[df['county'] == county]
+            #df_bels_county = df[df['county'] == county]
+            df_bels_county = df_bels_unique[df_bels_unique['county'] == county]
             print(f"Processing county: {county}")
             print(f"Number of records: {len(df_bels_county)}")
             print(f"DataFrame shape: {df_bels_county.shape}")
@@ -410,22 +426,35 @@ def main():
 
             # Add groups to dataframe
             df_bels_county['Group_ID'] = group_assignments
-            
 
             # Assign sub-groups based on eventDate, recordNumber, and habitat similarity
             sub_group_assignments = assign_sub_groups(df_bels_county)
             df_bels_county['Sub_Group_ID'] = sub_group_assignments
 
+            #
+            df_bels_county_all = df[df['county'] == county]
+            
             # Add location score
             add_unique_id_count(df_bels_county)
-            
+
+            # merge results of a filtered BELS_Grouper dataset with original ungrouped
+            df_county_merged = pd.merge(
+                df_bels_county_all,
+                df_bels_county[['bels_location_id', 'Group_ID','Sub_Group_ID','id_score']],
+                on='bels_location_id',
+                how='left'
+            )
+
             
             county_sanitized = sanitize_filename(county)
             filename = county_sanitized + '_BELS_Grouper.csv'
+            filename_unmerged = county_sanitized + '_UNMERGED_BELS_Grouper.csv'
             results_dir = Path('BELS_Grouper_results')
             results_dir.mkdir(parents=True, exist_ok=True)
             results_path = results_dir / filename
-            df_bels_county.to_csv(results_path, sep='\t', index=False)
+            results_unmerged_path = results_dir / filename_unmerged
+            df_bels_county.to_csv(results_unmerged_path, sep='\t', index=False)
+            df_county_merged.to_csv(results_path, sep='\t', index=False)
 
     else:
         print("No valid CSV files to process.")
