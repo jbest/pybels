@@ -284,30 +284,18 @@ def normalize_county_name(county_name):
 
 # Main function
 def main():
-    # Load the configuration and fields from export_config.txt
-    """
-    config, export_columns = load_export_config()
-    
-    if config is None or export_columns is None:
-        return
-    """
-
     # set up argparse
     args = arg_setup()
     verbose = args['verbose']
     input_path = args['input_path']
-
-
-    # Load CSV files from the selected folder
-    #csv_files, folder_path = load_csv_files_from_folder()
-    # input file must already have BELS metrics (bels string, group id, etc.)
-    #csv_file = '/media/jbest/data3/BRIT_git/TORCH_georeferencing/data/Texas/panhandle/panhandle_test/occurrences_BELS_metrics.tab'
-    #csv_file = '/media/jbest/data3/BRIT_git/TORCH_georeferencing/data/Texas/panhandle/panhandle_test/occurrences_BELS_metrics_sample.tab'
-    csv_file = input_path
     
-    if csv_file:
+    if input_path:
+        # convert to Path object
+        input_path = Path(input_path)
+        # TSV or CSV using Sniffer
+        df = pd.read_csv(input_path, sep=None, on_bad_lines='skip')
         # TSV import
-        df = pd.read_csv(csv_file, low_memory=False, sep='\t')
+        #df = pd.read_csv(csv_file, low_memory=False, sep='\t')
         # CSV import
         #df = pd.read_csv(csv_file, low_memory=False, encoding = 'utf-8')
         bels_location_ids = df['bels_location_id'].unique()
