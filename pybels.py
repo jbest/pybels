@@ -127,11 +127,12 @@ if __name__ == '__main__':
         print('ZIP directory path (-z) or TSV file path (-i) needed.')
 
     if input_path:
+        # convert to Path object
+        input_path = Path(input_path)
         # TSV or CSV using Sniffer
         df = pd.read_csv(input_path, sep=None, on_bad_lines='skip')
         # TSV import
         #df = pd.read_csv(input_path, sep='\t', low_memory=False, on_bad_lines='skip')
-        input_path = Path(input_path)
         # CSV import
         #df = pd.read_csv(input_path, low_memory=False, on_bad_lines='skip', encoding = 'ISO-8859-1')
         print('Data shape', df.shape)
